@@ -167,89 +167,52 @@ router.get("/", async (req, res) => {
  *         description: Server error
  */
 
-// router.put(
-//   "/:id",
-//   protect,
-//   cleanupImages(EngagementModel, "EngagementModel"),
-//   async (req, res) => {
-//     console.log("Incoming Data:", req.body);
-//     try {
-//       const {
-//         modelTitle,
-//         modelDescription,
-//         modelImage,
-//         keyPoints,
-//         supportModel,
-//       } = req.body;
-
-//       const engagementModel = await EngagementModel.findById(req.params.id);
-//       if (!engagementModel) {
-//         return res.status(404).json({
-//           success: false,
-//           message: "Model Data not found",
-//         });
-//       }
-
-//       engagementModel.modelTitle = modelTitle;
-//       engagementModel.modelDescription = modelDescription;
-//       engagementModel.modelImage = modelImage;
-//       engagementModel.keyPoints = keyPoints;
-//       engagementModel.supportModel = supportModel;
-//       engagementModel.updatedAt = Date.now();
-
-//       await engagementModel.save();
-
-//       res.status(200).json({
-//         success: true,
-//         message: "Model Data updated successfully",
-//         data: engagementModel,
-//       });
-//     } catch (error) {
-//       console.error("Error to update the data", error);
-//       res.status(500).json({
-//         success: false,
-//         message: "Error to update the data",
-//       });
-//     }
-//   },
-// );
-
-router.put("/:id", protect, async (req, res) => {
-  try {
-    const {
-      modelTitle,
-      modelDescription,
-      modelImage,
-      keyPoints,
-      supportModel,
-    } = req.body;
-
-    console.log("Body received:", req.body); // Check this in terminal
-
-    const updated = await EngagementModel.findByIdAndUpdate(
-      req.params.id,
-      {
+router.put(
+  "/:id",
+  protect,
+  cleanupImages(EngagementModel, "EngagementModel"),
+  async (req, res) => {
+    console.log("Incoming Data:", req.body);
+    try {
+      const {
         modelTitle,
         modelDescription,
         modelImage,
         keyPoints,
         supportModel,
-        updatedAt: Date.now(),
-      },
-      { new: true, runValidators: true },
-    );
+      } = req.body;
 
-    if (!updated)
-      return res.status(404).json({ success: false, message: "Not found" });
+      const engagementModel = await EngagementModel.findById(req.params.id);
+      if (!engagementModel) {
+        return res.status(404).json({
+          success: false,
+          message: "Model Data not found",
+        });
+      }
 
-    res
-      .status(200)
-      .json({ success: true, message: "Updated successfully", data: updated });
-  } catch (error) {
-    console.error("Update error:", error); // This will show exact error in terminal
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
+      engagementModel.modelTitle = modelTitle;
+      engagementModel.modelDescription = modelDescription;
+      engagementModel.modelImage = modelImage;
+      engagementModel.keyPoints = keyPoints;
+      engagementModel.supportModel = supportModel;
+      engagementModel.updatedAt = Date.now();
+
+      await engagementModel.save();
+
+      res.status(200).json({
+        success: true,
+        message: "Model Data updated successfully",
+        data: engagementModel,
+      });
+    } catch (error) {
+      console.error("Error to update the data", error);
+      res.status(500).json({
+        success: false,
+        message: "Error to update the data",
+      });
+    }
+  },
+);
 
 /**
  * @swagger
