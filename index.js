@@ -25,6 +25,7 @@ const ApplyPositionRouter = require("./routes/career/applyForPosition.routes");
 const CreativeWorkRouter = require("./routes/portfolio/creativeWork.routes");
 const AboutUsRouter = require("./routes/aboutUs/about-us.routes");
 const BlogRouter = require("./routes/blog/blog.routes");
+const FaqsRouter = require("./routes/faqs/faqs.routes");
 const HireFormRouter = require("./routes/hire/hireForm.routes");
 const HirePageRouter = require("./routes/hire/hirepage.routes");
 const MasterCourseRouter = require("./routes/training/masterCourse.routes");
@@ -107,6 +108,9 @@ app.use("/api/about-us", AboutUsRouter);
 
 //  blogs api
 app.use("/api/blogs", BlogRouter);
+
+//  faqs api
+app.use("/api/faqs", FaqsRouter);
 
 //  hire api
 app.use("/api/hire-form", HireFormRouter);
