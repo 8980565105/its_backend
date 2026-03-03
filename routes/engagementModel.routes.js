@@ -1,7 +1,7 @@
-const express = require('express');
-const EngagementModel = require('../models/engagementModel');
-const { protect } = require('../middlewares/auth');
-const cleanupImages = require('../middlewares/cleanupImages');
+const express = require("express");
+const EngagementModel = require("../models/engagementModel");
+const { protect } = require("../middlewares/auth");
+const cleanupImages = require("../middlewares/cleanupImages");
 const router = express.Router();
 
 /**
@@ -67,39 +67,45 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post('/', protect, async (req, res) => {
-    try {
-        const { modelTitle, modelDescription, modelImage, keyPoints, supportModel } = req.body;
+router.post("/", protect, async (req, res) => {
+  try {
+    const {
+      modelTitle,
+      modelDescription,
+      modelImage,
+      keyPoints,
+      supportModel,
+    } = req.body;
 
-        const checkTitle = await EngagementModel.findOne({ modelTitle });
-        if (checkTitle) {
-            return res.status(400).json({
-                success: false,
-                message: "Model Title already exists",
-            });
-        }
-
-        const engagementModel = new EngagementModel({
-            modelTitle,
-            modelDescription,
-            modelImage: modelImage || '',
-            keyPoints,
-            supportModel: supportModel || "24x7 chat support",
-        });
-
-        const result = await engagementModel.save();
-        res.status(201).json({
-            success: true,
-            message: "Model Data saved successfully",
-            result
-        });
-    } catch (error) {
-        console.error("Error to store the data", error);
-        res.status(500).json({
-            success: false,
-            message: "Error to store the data",
-        });
+    const checkTitle = await EngagementModel.findOne({ modelTitle });
+    if (checkTitle) {
+      return res.status(400).json({
+        success: false,
+        message: "Model Title already exists",
+      });
     }
+
+    const engagementModel = new EngagementModel({
+      modelTitle,
+      modelDescription,
+      modelImage: modelImage || "",
+      keyPoints,
+      supportModel: supportModel || "24x7 chat support",
+    });
+
+    const result = await engagementModel.save();
+    res.status(201).json({
+      success: true,
+      message: "Model Data saved successfully",
+      result,
+    });
+  } catch (error) {
+    console.error("Error to store the data", error);
+    res.status(500).json({
+      success: false,
+      message: "Error to store the data",
+    });
+  }
 });
 
 /**
@@ -114,21 +120,21 @@ router.post('/', protect, async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.get('/', async (req, res) => {
-    try {
-        const engagementModels = await EngagementModel.find();
-        res.status(200).json({
-            success: true,
-            message: "Model Data fetched successfully",
-            data: engagementModels
-        });
-    } catch (error) {
-        console.error("Error to fetch the data", error);
-        res.status(500).json({
-            success: false,
-            message: "Error to fetch the data",
-        });
-    }
+router.get("/", async (req, res) => {
+  try {
+    const engagementModels = await EngagementModel.find();
+    res.status(200).json({
+      success: true,
+      message: "Model Data fetched successfully",
+      data: engagementModels,
+    });
+  } catch (error) {
+    console.error("Error to fetch the data", error);
+    res.status(500).json({
+      success: false,
+      message: "Error to fetch the data",
+    });
+  }
 });
 
 /**
@@ -160,39 +166,89 @@ router.get('/', async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.put('/:id', protect,cleanupImages(EngagementModel,"EngagementModel"), async (req, res) => {
-    try {
-        const { modelTitle, modelDescription, modelImage, keyPoints, supportModel } = req.body;
 
-        const engagementModel = await EngagementModel.findById(req.params.id);
-        if (!engagementModel) {
-            return res.status(404).json({
-                success: false,
-                message: "Model Data not found",
-            });
-        }
+// router.put(
+//   "/:id",
+//   protect,
+//   cleanupImages(EngagementModel, "EngagementModel"),
+//   async (req, res) => {
+//     console.log("Incoming Data:", req.body);
+//     try {
+//       const {
+//         modelTitle,
+//         modelDescription,
+//         modelImage,
+//         keyPoints,
+//         supportModel,
+//       } = req.body;
 
-        engagementModel.modelTitle = modelTitle;
-        engagementModel.modelDescription = modelDescription;
-        engagementModel.modelImage = modelImage;
-        engagementModel.keyPoints = keyPoints;
-        engagementModel.supportModel = supportModel;
-        engagementModel.updatedAt = Date.now();
+//       const engagementModel = await EngagementModel.findById(req.params.id);
+//       if (!engagementModel) {
+//         return res.status(404).json({
+//           success: false,
+//           message: "Model Data not found",
+//         });
+//       }
 
-        await engagementModel.save();
+//       engagementModel.modelTitle = modelTitle;
+//       engagementModel.modelDescription = modelDescription;
+//       engagementModel.modelImage = modelImage;
+//       engagementModel.keyPoints = keyPoints;
+//       engagementModel.supportModel = supportModel;
+//       engagementModel.updatedAt = Date.now();
 
-        res.status(200).json({
-            success: true,
-            message: "Model Data updated successfully",
-            data: engagementModel
-        });
-    } catch (error) {
-        console.error("Error to update the data", error);
-        res.status(500).json({
-            success: false,
-            message: "Error to update the data",
-        });
-    }
+//       await engagementModel.save();
+
+//       res.status(200).json({
+//         success: true,
+//         message: "Model Data updated successfully",
+//         data: engagementModel,
+//       });
+//     } catch (error) {
+//       console.error("Error to update the data", error);
+//       res.status(500).json({
+//         success: false,
+//         message: "Error to update the data",
+//       });
+//     }
+//   },
+// );
+
+router.put("/:id", protect, async (req, res) => {
+  try {
+    const {
+      modelTitle,
+      modelDescription,
+      modelImage,
+      keyPoints,
+      supportModel,
+    } = req.body;
+
+    console.log("Body received:", req.body); // Check this in terminal
+
+    const updated = await EngagementModel.findByIdAndUpdate(
+      req.params.id,
+      {
+        modelTitle,
+        modelDescription,
+        modelImage,
+        keyPoints,
+        supportModel,
+        updatedAt: Date.now(),
+      },
+      { new: true, runValidators: true },
+    );
+
+    if (!updated)
+      return res.status(404).json({ success: false, message: "Not found" });
+
+    res
+      .status(200)
+      .json({ success: true, message: "Updated successfully", data: updated });
+  } catch (error) {
+    console.error("Update error:", error); // This will show exact error in terminal
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 /**
@@ -218,29 +274,34 @@ router.put('/:id', protect,cleanupImages(EngagementModel,"EngagementModel"), asy
  *       500:
  *         description: Server error
  */
-router.delete('/:id', protect, cleanupImages(EngagementModel),async (req, res) => {
+router.delete(
+  "/:id",
+  protect,
+  cleanupImages(EngagementModel),
+  async (req, res) => {
     try {
-        const engagementModel = await EngagementModel.findById(req.params.id);
-        if (!engagementModel) {
-            return res.status(404).json({
-                success: false,
-                message: "Model Data not found",
-            });
-        }
-
-        await EngagementModel.findByIdAndDelete(req.params.id);
-
-        res.status(200).json({
-            success: true,
-            message: "Model Data deleted successfully",
+      const engagementModel = await EngagementModel.findById(req.params.id);
+      if (!engagementModel) {
+        return res.status(404).json({
+          success: false,
+          message: "Model Data not found",
         });
+      }
+
+      await EngagementModel.findByIdAndDelete(req.params.id);
+
+      res.status(200).json({
+        success: true,
+        message: "Model Data deleted successfully",
+      });
     } catch (error) {
-        console.error("Error to delete the data", error);
-        res.status(500).json({
-            success: false,
-            message: "Error to delete the data",
-        });
+      console.error("Error to delete the data", error);
+      res.status(500).json({
+        success: false,
+        message: "Error to delete the data",
+      });
     }
-});
+  },
+);
 
 module.exports = router;
