@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const rateLimit = require("express-rate-limit");
 require("./config/db");
 const cors = require("cors");
 const helmet = require("helmet");
@@ -44,6 +45,8 @@ const NavbarGroupTabImageManageRoutes = require("./routes/navbarGroupTabHandel.r
 
 
 const app = express();
+app.set('trust proxy', 1);
+
 app.use(helmet());
 app.use(cors({ origin: "*", credentials: true }));
 app.use(express.json({ limit: "20mb" }));
@@ -61,6 +64,16 @@ app.use((req, res, next) => {
   });
   next();
 });
+
+
+const limiter = rateLimit({
+windowMs: 15 * 60 * 1000,
+max: 100
+})
+
+
+app.use(limiter)
+
 
 // Middleware to set no-cache headers globally
 const setNoCache = (req, res, next) => {
