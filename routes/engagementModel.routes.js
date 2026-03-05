@@ -172,7 +172,6 @@ router.put(
   protect,
   cleanupImages(EngagementModel, "EngagementModel"),
   async (req, res) => {
-    console.log("Incoming Data:", req.body);
     try {
       const {
         modelTitle,

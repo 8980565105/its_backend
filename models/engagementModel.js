@@ -16,7 +16,7 @@ const engagementModelSchema = new mongoose.Schema(
       required: true
     },
     keyPoints: {
-      type: [String], // Array of strings
+      type: [String],
       required: true
     },
     supportModel: {
