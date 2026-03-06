@@ -9,11 +9,7 @@ const { logger, statusColor } = require("./config/logger");
 const swaggerDocs = require("./swagger");
 const sitemapRouter = require("./routes/sitemap.routes");
 const path = require("path");
-const botBlocker = require('./middlewares/botBlocker');
-const trafficControl = require('./middlewares/trafficControl');
-
 require("./cron/cron_contactCleanup");
-
 
 // Routers
 const userRouter = require("./routes/user.routes");
@@ -46,8 +42,8 @@ const NavbarGroupTabImageManageRoutes = require("./routes/navbarGroupTabHandel.r
 
 
 const app = express();
-app.use(botBlocker);
-app.use(trafficControl)
+
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.set('trust proxy', 1);
