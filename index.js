@@ -9,10 +9,8 @@ const { logger, statusColor } = require("./config/logger");
 const swaggerDocs = require("./swagger");
 const sitemapRouter = require("./routes/sitemap.routes");
 const path = require("path");
-// cron jobs
 require("./cron/cron_contactCleanup");
 
-// require("./cron/cron_imageBackup");
 
 // Routers
 const userRouter = require("./routes/user.routes");
@@ -45,6 +43,8 @@ const NavbarGroupTabImageManageRoutes = require("./routes/navbarGroupTabHandel.r
 
 
 const app = express();
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.set('trust proxy', 1);
 
 app.use(helmet());
