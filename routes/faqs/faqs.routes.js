@@ -7,6 +7,7 @@ const router = express.Router();
 //create route
 router.post("/", protect, async (req, res) => {
   try {
+    console.log("🚀 ~ router.post ~ req.body:", req.body)
     const { categories, title, answer } = req.body;
 
     if (!categories || !title || !answer) {
@@ -124,6 +125,8 @@ router.get("/admin", async (req, res) => {
 
 //fronted get route
 router.get("/", async (req, res) => {
+
+  console.log("🚀 ~ router.get ~ req.query:", req.query)
   try {
     const { page = 1, limit = 10, category = "" } = req.query;
 

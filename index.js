@@ -11,6 +11,12 @@ const sitemapRouter = require("./routes/sitemap.routes");
 const path = require("path");
 require("./cron/cron_contactCleanup");
 
+// 1. Middlewares Import Karo
+const botBlocker = require('./middlewares/botBlocker');
+const trafficControl = require('./middlewares/trafficControl');
+
+const morgan = require('morgan');
+
 // Routers
 const userRouter = require("./routes/user.routes");
 const HomeWhyChooseRouter = require("./routes/home/choose_its.routes");
@@ -43,6 +49,12 @@ const NavbarGroupTabImageManageRoutes = require("./routes/navbarGroupTabHandel.r
 
 const app = express();
 
+app.use(morgan('dev'));
+// Morgan ma 'combined' vapro jethi User-Agent (kyathi request avi) khabar pade
+// app.use(morgan(':method :url :status :res[content-length] - :response-time ms - :user-agent'));
+
+app.use(botBlocker);
+app.use(trafficControl)
 
 app.use(express.static(path.join(__dirname, 'public')));
 

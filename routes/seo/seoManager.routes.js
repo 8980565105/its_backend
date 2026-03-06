@@ -270,9 +270,11 @@ router.get('/', async (req, res) => {
 
 router.get('/navigation-structure', async (req, res) => {
     try {
+        console.log("🔍 [START] Fetching navigation structure...") //addd
         // Add a check inside the route for extra safety
         if (typeof NavbarGroupTabImageManage.find !== 'function') {
             console.error('CRITICAL: NavbarGroupTabImageManage model is not loaded correctly. Check the require() path in seoManager.routes.js');
+            console.error('CRITICAL: NavbarGroupTabImageManage model error'); //adddd
             throw new Error('Server configuration error.');
         }
 
@@ -286,6 +288,7 @@ router.get('/navigation-structure', async (req, res) => {
         // Step 2: Fetch all the icon mappings. This will now work.
         const navbarImages = await NavbarGroupTabImageManage.find({}).lean();
 
+        console.log(`📊 DB Stats: Links count: ${allLinks.length}, Icons count: ${navbarImages.length}`); // <-- ADDED
         // Step 3: Create efficient lookup maps...
         const serviceIdToIconMap = new Map();
         const hireIdToIconMap = new Map();
@@ -329,6 +332,8 @@ router.get('/navigation-structure', async (req, res) => {
         const serviceNav = groupByCategory(allLinks, 'service');
         const hireNav = groupByCategory(allLinks, 'hire');
 
+        console.log("✅ [SUCCESS] Navigation structure generated successfully"); // <-- ADDED
+        
         // Step 7: Send the response...
         res.status(200).json({
             success: true,

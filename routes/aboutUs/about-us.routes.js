@@ -203,6 +203,7 @@ router.post('/', protect, async (req, res) => {
 router.get('/', async (req, res) => {
     try {
         const aboutUs = await AboutUs.findOne().sort({ createdAt: -1 }).lean();
+        console.log("🚀 ~ router.get ~ aboutUs:")
         if (!aboutUs) {
             return res.status(404).json({ success: false, message: "About Us not found" });
         }
