@@ -132,7 +132,9 @@ const transporter = nodemailer.createTransport({
 // POST /api/hire-form
 router.post("/", async (req, res) => {
     try {
-        const { name, email, phone, recruitment, subject, message, captchaToken } = req.body;
+        const { name, email, phone, recruitment, subject, message,
+            //  captchaToken
+             } = req.body;
 
         // Validate required fields
         if (!name || !email || !phone || !recruitment || !subject || !message) {
@@ -142,27 +144,27 @@ router.post("/", async (req, res) => {
             });
         }
 
-        if (!captchaToken) {
-            return res.status(400).json({
-                success: false,
-                message: "Captcha is required",
-            });
-        }
+        // if (!captchaToken) {
+        //     return res.status(400).json({
+        //         success: false,
+        //         message: "Captcha is required",
+        //     });
+        // }
 
-        const response = await axios.post("https://www.google.com/recaptcha/api/siteverify", null, // no JSON body, Google expects form-encoded
-            {
-                params: {
-                    secret: RECAPTCHA_SECRET,
-                    response: captchaToken,
-                },
-            }
-        );
-        if (!response.data.success) {
-            return res.status(400).json({
-                success: false,
-                message: "Captcha verification failed"
-            });
-        }
+        // const response = await axios.post("https://www.google.com/recaptcha/api/siteverify", null, // no JSON body, Google expects form-encoded
+        //     {
+        //         params: {
+        //             secret: RECAPTCHA_SECRET,
+        //             response: captchaToken,
+        //         },
+        //     }
+        // );
+        // if (!response.data.success) {
+        //     return res.status(400).json({
+        //         success: false,
+        //         message: "Captcha verification failed"
+        //     });
+        // }
 
         const newHireForm = new HireForm({
             name,

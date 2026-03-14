@@ -1,13 +1,14 @@
-const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const nodemailer = require('nodemailer');
-const { CronJob } = require('cron');
+const express = require("express");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+const nodemailer = require("nodemailer");
+const { CronJob } = require("cron");
 const axios = require("axios");
-const Contact = require('../../models/footer/contact_footer');
-const { protect } = require('../../middlewares/auth');
-const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY;
+const Contact = require("../../models/footer/contact_footer");
+const { protect } = require("../../middlewares/auth");
+const secureUpload = require("../../middlewares/secureUpload");
+// const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY;
 const router = express.Router();
 /**
  * @swagger
@@ -47,7 +48,7 @@ const router = express.Router();
  *           example: +91-9876543210
  *         subject:
  *           type: string
- *           enum: 
+ *           enum:
  *             - Hire Developer(s)
  *             - Web Development
  *             - Mobile App Development
@@ -56,7 +57,7 @@ const router = express.Router();
  *             - Digital Marketing
  *             - Other Services
  *           example: Web Development
- *         message: 
+ *         message:
  *           type: string
  *           example: I am interested in your services.
  *         fileUrl:
@@ -70,80 +71,81 @@ const router = express.Router();
  *           format: date-time
  */
 
+// const UPLOAD_DIR = path.resolve("uploads");
+// if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
-const UPLOAD_DIR = path.resolve('uploads');
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, UPLOAD_DIR);
+//   },
+//   filename: (req, file, cb) => {
+//     // Format: YYYY-MM-DD-original-name.ext (with timestamp to avoid collisions)
+//     const d = new Date();
+//     const pad = (n) => String(n).padStart(2, "0");
+//     const datePrefix = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, UPLOAD_DIR);
-    },
-    filename: (req, file, cb) => {
-        // Format: YYYY-MM-DD-original-name.ext (with timestamp to avoid collisions)
-        const d = new Date();
-        const pad = (n) => String(n).padStart(2, '0');
-        const datePrefix = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+//     const ext = path.extname(file.originalname);
+//     const base = path.basename(file.originalname, ext);
+//     const safeBase = base
+//       .toLowerCase()
+//       .replace(/[^a-z0-9]+/g, "-")
+//       .replace(/(^-|-$)/g, "");
 
-        const ext = path.extname(file.originalname);
-        const base = path.basename(file.originalname, ext);
-        const safeBase = base.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-
-        // Add timestamp so two uploads with same name on same day don't overwrite
-        const filename = `${datePrefix}-${safeBase}-${Date.now()}${ext}`;
-        cb(null, filename);
-    }
-});
+//     // Add timestamp so two uploads with same name on same day don't overwrite
+//     const filename = `${datePrefix}-${safeBase}-${Date.now()}${ext}`;
+//     cb(null, filename);
+//   },
+// });
 
 // File filter: only PDF/DOC/DOCX
-const fileFilter = (req, file, cb) => {
-    const allowedTypes = [
-        'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    ];
-    if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(new Error("Only PDF and DOC/DOCX files are allowed"), false);
-    }
-};
+// const fileFilter = (req, file, cb) => {
+//   const allowedTypes = [
+//     "application/pdf",
+//     "application/msword",
+//     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+//   ];
+//   if (allowedTypes.includes(file.mimetype)) {
+//     cb(null, true);
+//   } else {
+//     cb(new Error("Only PDF and DOC/DOCX files are allowed"), false);
+//   }
+// };
 
-const upload = multer({
-    storage,
-    fileFilter,
-    limits: { fileSize: 5 * 1024 * 1024 }
-}).single("file");
+// const upload = multer({
+//   storage,
+//   fileFilter,
+//   limits: { fileSize: 5 * 1024 * 1024 },
+// }).single("file");
 
 // Custom middleware for Multer error handling
-const uploadMiddleware = (req, res, next) => {
-    upload(req, res, function (err) {
-        if (err instanceof multer.MulterError) {
-            if (err.message == 'File too large') {
-                return res.status(400).json({
-                    success: false,
-                    message: 'File too large. Maximum size is 5MB.',
-                });
-            }
-            return res.status(400).json({ success: false, message: err.message });
-        } else if (err) {
-            console.log("🚀 ~ uploadMiddleware else ~ err.message: ", err.message);
-            return res.status(400).json({
-                success: false,
-                message: err.message || "File upload error"
-            });
-        }
-        next();
-    });
-};
-
+// const uploadMiddleware = (req, res, next) => {
+//   upload(req, res, function (err) {
+//     if (err instanceof multer.MulterError) {
+//       if (err.message == "File too large") {
+//         return res.status(400).json({
+//           success: false,
+//           message: "File too large. Maximum size is 5MB.",
+//         });
+//       }
+//       return res.status(400).json({ success: false, message: err.message });
+//     } else if (err) {
+//       console.log("🚀 ~ uploadMiddleware else ~ err.message: ", err.message);
+//       return res.status(400).json({
+//         success: false,
+//         message: err.message || "File upload error",
+//       });
+//     }
+//     next();
+//   });
+// };
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-})
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 /**
  * @swagger
@@ -180,7 +182,7 @@ const transporter = nodemailer.createTransport({
  *                 example: +91-9876543210
  *               subject:
  *                 type: string
- *                 enum: 
+ *                 enum:
  *                   - Hire Developer(s)
  *                   - Web Development
  *                   - Mobile App Development
@@ -189,7 +191,7 @@ const transporter = nodemailer.createTransport({
  *                   - Digital Marketing
  *                   - Other Services
  *                 example: Mobile App Development
- *               message: 
+ *               message:
  *                 type: string
  *                 example: I want to build a mobile app with your team.
  *               captchaToken:
@@ -210,7 +212,7 @@ const transporter = nodemailer.createTransport({
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 message: 
+ *                 message:
  *                   type: string
  *                   example: Contact saved successfully
  *                 data:
@@ -221,71 +223,90 @@ const transporter = nodemailer.createTransport({
  *         description: Server error
  */
 
-router.post('/', uploadMiddleware, async (req, res) => {
-    try {
-        const { firstname, lastname, email, subject, phone, message, captchaToken } = req.body;
-        console.log("🚀 ~ message:", message)
-        console.log("🚀 ~ phone:", phone)
-        console.log("🚀 ~ subject:", subject)
-        console.log("🚀 ~ email:", email)
-        console.log("🚀 ~ lastname:", lastname)
-        console.log("🚀 ~ firstname:", firstname)
-        // console.log("🚀 ~ req.body:", req.body)
-        const fileUrl = req.file ? path.join('uploads', req.file.filename) : null;
-        // check evry thing avialble or not   
-        if (!firstname || !lastname || !email || !phone || !subject || !message) {
-            return res.status(400).json({
-                success: false,
-                message: "All fields are required",
-            });
-        }
+router.post("/", secureUpload, async (req, res) => {
+  try {
+    const {
+      firstname,
+      lastname,
+      email,
+      subject,
+      phone,
+      message,
+    //   captchaToken,
+    } = req.body;
+    console.log("🚀 ~ message:", message);
+    console.log("🚀 ~ phone:", phone);
+    console.log("🚀 ~ subject:", subject);
+    console.log("🚀 ~ email:", email);
+    console.log("🚀 ~ lastname:", lastname);
+    console.log("🚀 ~ firstname:", firstname);
+    console.log("🚀 ~ req.body:", req.body);
+    const fileUrl = req.file ? path.join("uploads", req.file.filename) : null;
+    // check evry thing avialble or not
+    if (!firstname || !lastname || !email || !phone || !subject || !message) {
+      //   return res.status(400).json({
+      //     success: false,
+      //     message: "All fields are required",
+      //   });
+      if (req.file?.path) fs.unlink(req.file.path, () => {});
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
 
-        if (!captchaToken) {
-            return res.status(400).json({
-                success: false,
-                message: "Captcha is required",
-            });
-        }
+    // if (!captchaToken) {
+    //         if (req.file?.path) fs.unlink(req.file.path, () => {});
+    //         return res.status(400).json({
+    //             success: false,
+    //             message: "Captcha is required",
+    //         });
+    //     }
+    // if (!captchaToken) {
+    //     return res.status(400).json({
+    //         success: false,
+    //         message: "Captcha is required",
+    //     });
+    // }
 
-        const response = await axios.post(
-            "https://www.google.com/recaptcha/api/siteverify",
-            null, // no JSON body, Google expects form-encoded
-            {
-                params: {
-                    secret: RECAPTCHA_SECRET,
-                    response: captchaToken,
-                },
-            }
-        );
+    // const response = await axios.post(
+    //   "https://www.google.com/recaptcha/api/siteverify",
+    //   null, // no JSON body, Google expects form-encoded
+    //   {
+    //     params: {
+    //       secret: RECAPTCHA_SECRET,
+    //       response: captchaToken,
+    //     },
+    //   },
+    // );
 
-        if (!response.data.success) {
-            return res.status(400).json({
-                success: false,
-                message: "Captcha verification failed"
-            });
-        }
+    // if (!response.data.success) {
+    //   if (req.file?.path) fs.unlink(req.file.path, () => {});
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Captcha verification failed",
+    //   });
+    // }
 
+    const newContact = new Contact({
+      firstname,
+      lastname,
+      email,
+      phone,
+      subject,
+      message,
+      fileUrl,
+    });
 
+    await newContact.save();
 
-        const newContact = new Contact({
-            firstname,
-            lastname,
-            email,
-            phone,
-            subject,
-            message,
-            fileUrl,
-        });
-
-        await newContact.save();
-
-        let adminMailOptions = {
-            // from: email,
-            // to: process.env.EMAIL_USER, // ✅ Replace with your admin email
-            from: `"${firstname} ${lastname}" <${email}>`, // ✅ user who submitted the form
-            to: process.env.EMAIL_USER,                   // ✅ goes to your company inbox
-            subject: "📩 New Contact Form Submission",
-            html: `
+    let adminMailOptions = {
+      // from: email,
+      // to: process.env.EMAIL_USER, // ✅ Replace with your admin email
+      from: `"${firstname} ${lastname}" <${email}>`, // ✅ user who submitted the form
+      to: process.env.EMAIL_USER, // ✅ goes to your company inbox
+      subject: "📩 New Contact Form Submission",
+      html: `
                 <div style="font-family: Arial, sans-serif; padding:20px; border:1px solid #eee; border-radius:8px; max-width:700px; margin:auto;">
                     <h2 style="color:#333;">New Contact Request</h2>
                     <p>You have received a new contact form submission:</p>
@@ -304,24 +325,24 @@ router.post('/', uploadMiddleware, async (req, res) => {
                     <p style="color:#555;">Best Regards,<br/>Inspire Techno Solution Website</p>
                 </div>
             `,
-            attachments: fileUrl
-                ? [
-                    {
-                        filename: req.file.filename,
-                        path: path.join(process.cwd(), fileUrl),
-                    },
-                ]
-                : [],
-        };
+      attachments: fileUrl
+        ? [
+            {
+              filename: req.file.filename,
+              path: path.join(process.cwd(), fileUrl),
+            },
+          ]
+        : [],
+    };
 
-        // Send to admin
-        await transporter.sendMail(adminMailOptions);
+    // Send to admin
+    await transporter.sendMail(adminMailOptions);
 
-        let userMailOptions = {
-            from: `"Inspire Techno Solution" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: " Thank you for reaching out to us ",
-            html: `
+    let userMailOptions = {
+      from: `"Inspire Techno Solution" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: " Thank you for reaching out to us ",
+      html: `
                 <div style="font-family: Arial, sans-serif; padding:20px; border:1px solid #eee; border-radius:8px; max-width:600px; margin:auto;">
                     <div style="text-align:center; margin-bottom:20px;">
                         <img  src="cid:companylogo" alt="Inspire Techno Solution" style="width:120px;"/>
@@ -347,32 +368,29 @@ router.post('/', uploadMiddleware, async (req, res) => {
                     </p>
                 </div>
             `,
-            attachments: [  // ✅ Added comma before this
-                {
-                    filename: 'logo.png',
-                    path: path.join(__dirname, '../../assets/logo.png'), // make sure logo exists here
-                    cid: 'companylogo' // must match src="cid:companylogo"
-                }
-            ]
-        };
+      attachments: [
+        // ✅ Added comma before this
+        {
+          filename: "logo.png",
+          path: path.join(__dirname, "../../assets/logo.png"), // make sure logo exists here
+          cid: "companylogo", // must match src="cid:companylogo"
+        },
+      ],
+    };
 
+    // Send to user
+    await transporter.sendMail(userMailOptions);
 
-        // Send to user
-        await transporter.sendMail(userMailOptions);
-
-        res.status(201).json({
-            success: true,
-            message: "Contact saved successfully",
-            data: newContact,
-        });
-
-
-    } catch (error) {
-        console.error('❌ Error saving contact:', error);
-        res.status(500).json({ success: false, message: "Server Error" });
-    }
+    res.status(201).json({
+      success: true,
+      message: "Contact saved successfully",
+      data: newContact,
+    });
+  } catch (error) {
+    console.error("❌ Error saving contact:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
 });
-
 
 /**
  * @swagger
@@ -397,7 +415,7 @@ router.post('/', uploadMiddleware, async (req, res) => {
  *         name: category
  *         schema:
  *           type: string
- *           enum: 
+ *           enum:
  *             - Hire Developer(s)
  *             - Web Development
  *             - Mobile App Development
@@ -442,54 +460,53 @@ router.post('/', uploadMiddleware, async (req, res) => {
  *         description: Server error
  */
 
-
-router.get('/', async (req, res) => {
-    try {
-        const { page = 1, limit = 10, category = '', value = '' } = req.query;
-        let query = {};
-        if (category) {
-            query = {
-                ...query,
-                subject: category
-            }
-        }
-
-        if (value) {
-            const regex = new RegExp(value, 'i');
-            query = {
-                ...query,
-                $or: [
-                    { firstname: regex },
-                    { lastname: regex },
-                    { email: regex },
-                    { subject: regex },
-                ]
-            }
-        }
-
-        const skip = (page - 1) * limit;
-        const [contact, total] = await Promise.all([
-            Contact.find(query)
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(Number(limit))
-                .lean(),
-            Contact.countDocuments(query),
-        ])
-        res.json({
-            success: true,
-            data: contact,
-            pagination: {
-                current: Number(page),
-                pages: Math.ceil(total / limit),
-                total,
-            },
-        });
-    } catch (error) {
-        console.error("Get contact user error: ", error);
-        res.status(500).json({ Success: false, message: "Server Error" });
+router.get("/", async (req, res) => {
+  try {
+    const { page = 1, limit = 10, category = "", value = "" } = req.query;
+    let query = {};
+    if (category) {
+      query = {
+        ...query,
+        subject: category,
+      };
     }
-})
+
+    if (value) {
+      const regex = new RegExp(value, "i");
+      query = {
+        ...query,
+        $or: [
+          { firstname: regex },
+          { lastname: regex },
+          { email: regex },
+          { subject: regex },
+        ],
+      };
+    }
+
+    const skip = (page - 1) * limit;
+    const [contact, total] = await Promise.all([
+      Contact.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(Number(limit))
+        .lean(),
+      Contact.countDocuments(query),
+    ]);
+    res.json({
+      success: true,
+      data: contact,
+      pagination: {
+        current: Number(page),
+        pages: Math.ceil(total / limit),
+        total,
+      },
+    });
+  } catch (error) {
+    console.error("Get contact user error: ", error);
+    res.status(500).json({ Success: false, message: "Server Error" });
+  }
+});
 
 /**
  * @swagger
@@ -516,7 +533,7 @@ router.get('/', async (req, res) => {
  *               properties:
  *                 success:
  *                   type: boolean
- *                 message: 
+ *                 message:
  *                   type: string
  *                   example: Contact deleted successfully
  *       404:
@@ -524,59 +541,47 @@ router.get('/', async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.delete('/:id', protect, async (req, res) => {
-    try {
-        const id = req.params.id;
+router.delete("/:id", protect, async (req, res) => {
+  try {
+    const id = req.params.id;
 
-        //check record is or not
-        const contact = await Contact.findById(id);
-        if (!contact) {
-            return res.status(404).json({
-                success: false, message: "Contact not found"
-            });
-        }
-        if (contact.fileUrl) {
-            const absolutePath = path.isAbsolute(contact.fileUrl)
-                ? contact.fileUrl
-                : path.join(process.cwd(), contact.fileUrl);
-
-            try {
-                await fs.promises.unlink(absolutePath);
-                console.log(`🗑 Deleted file: ${absolutePath}`);
-            } catch (err) {
-                if (err.code !== 'ENOENT') {
-                    console.error("❌ File delete error:", err);
-                } else {
-                    console.warn(`⚠️ File not found (already gone): ${absolutePath}`);
-                }
-            }
-        }
-        const contactD = await Contact.findByIdAndDelete(id);
-        if (!contactD) {
-            return res.status(404).json({
-                success: false, message: "Contact not found"
-            });
-        }
-
-
-        res.json({ success: true, message: "Contact deleted successfully" });
-    } catch (error) {
-        console.error("Delete contact user error: ", error);
-        res.status(500).json({ Success: false, message: "Server Error" });
+    //check record is or not
+    const contact = await Contact.findById(id);
+    if (!contact) {
+      return res.status(404).json({
+        success: false,
+        message: "Contact not found",
+      });
     }
-})
+    if (contact.fileUrl) {
+      const absolutePath = path.isAbsolute(contact.fileUrl)
+        ? contact.fileUrl
+        : path.join(process.cwd(), contact.fileUrl);
 
+      try {
+        await fs.promises.unlink(absolutePath);
+        console.log(`🗑 Deleted file: ${absolutePath}`);
+      } catch (err) {
+        if (err.code !== "ENOENT") {
+          console.error("❌ File delete error:", err);
+        } else {
+          console.warn(`⚠️ File not found (already gone): ${absolutePath}`);
+        }
+      }
+    }
+    const contactD = await Contact.findByIdAndDelete(id);
+    if (!contactD) {
+      return res.status(404).json({
+        success: false,
+        message: "Contact not found",
+      });
+    }
 
-
+    res.json({ success: true, message: "Contact deleted successfully" });
+  } catch (error) {
+    console.error("Delete contact user error: ", error);
+    res.status(500).json({ Success: false, message: "Server Error" });
+  }
+});
 
 module.exports = router;
-
-
-/*
-
-
-      ${fileUrl
-                    ? `<p><b>Attached File:</b> <a href="${process.env.SERVER_URL}/${fileUrl}" target="_blank">Download</a></p>`
-                    : ""
-                }
-*/

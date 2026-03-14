@@ -149,12 +149,12 @@ router.post("/", async (req, res) => {
             }
         );
 
-        if (!response.data.success) {
-            return res.status(400).json({
-                success: false,
-                message: "Captcha verification failed"
-            });
-        }
+        // if (!response.data.success) {
+        //     return res.status(400).json({
+        //         success: false,
+        //         message: "Captcha verification failed"
+        //     });
+        // }
         // Save contact to DB
         const tranningContact = new TranningContact({
             fullname,

@@ -12,10 +12,10 @@ const path = require("path");
 require("./cron/cron_contactCleanup");
 
 // 1. Middlewares Import Karo
-const botBlocker = require('./middlewares/botBlocker');
-const trafficControl = require('./middlewares/trafficControl');
+const botBlocker = require("./middlewares/botBlocker");
+const trafficControl = require("./middlewares/trafficControl");
 
-const morgan = require('morgan');
+const morgan = require("morgan");
 
 // Routers
 const userRouter = require("./routes/user.routes");
@@ -44,21 +44,18 @@ const TranningContactFooterRouter = require("./routes/footer/training_contact_fo
 const TranningMainPageRouter = require("./routes/training/trainningMainPageData.routes");
 const HomePageDataRouter = require("./routes/home/homePageData.routes");
 const HireMainPageDataRoutes = require("./routes/hire/hireMainPageData.routes");
-const NavbarGroupTabImageManageRoutes = require("./routes/navbarGroupTabHandel.routes")
-
+const NavbarGroupTabImageManageRoutes = require("./routes/navbarGroupTabHandel.routes");
 
 const app = express();
 
-app.use(morgan('dev'));
-// Morgan ma 'combined' vapro jethi User-Agent (kyathi request avi) khabar pade
-// app.use(morgan(':method :url :status :res[content-length] - :response-time ms - :user-agent'));
+app.use(morgan("dev"));
 
 app.use(botBlocker);
-app.use(trafficControl)
+app.use(trafficControl);
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 
 app.use(helmet());
 app.use(cors({ origin: "*", credentials: true }));
@@ -72,21 +69,19 @@ app.use((req, res, next) => {
     const duration = Date.now() - start;
     const coloredStatus = statusColor(res.statusCode);
     logger.info(
-      `${req.method} ${req.originalUrl} ${coloredStatus} - ${duration}ms`
+      `${req.method} ${req.originalUrl} ${coloredStatus} - ${duration}ms`,
     );
   });
   next();
 });
 
-
 const limiter = rateLimit({
-windowMs: 15 * 60 * 1000,
-max: 100
-})
+  windowMs: 10 * 60 * 1000,
+  // windowMs: 60 * 60 * 1000,
+  max: 100,
+});
 
-
-app.use(limiter)
-
+app.use(limiter);
 
 // Middleware to set no-cache headers globally
 const setNoCache = (req, res, next) => {
@@ -151,8 +146,8 @@ app.use("/api/training-main-page", TranningMainPageRouter);
 //  seo manager api
 app.use("/api/seo-manager", seoManagerRouter);
 
-// navbar 
-app.use("/api/navbar-group-tab-image-manage", NavbarGroupTabImageManageRoutes)
+// navbar
+app.use("/api/navbar-group-tab-image-manage", NavbarGroupTabImageManageRoutes);
 
 app.use("/", sitemapRouter);
 
@@ -166,5 +161,5 @@ app.use("*", (req, res) => {
 });
 
 app.listen(port, "0.0.0.0", () =>
-  console.log(`Server started on http://localhost:${port}`)
+  console.log(`Server started on http://localhost:${port}`),
 );
