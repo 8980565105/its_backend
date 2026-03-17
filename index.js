@@ -76,8 +76,8 @@ app.use((req, res, next) => {
 });
 
 const limiter = rateLimit({
-  windowMs: 10 * 60 * 1000,
-  max: 100,
+  windowMs: 15 * 60 * 1000,
+  max: 200,
 });
 
 app.use(limiter);

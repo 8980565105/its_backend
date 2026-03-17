@@ -489,9 +489,14 @@ router.get("/slug/:slug", async (req, res) => {
 
     // Keep the fallback just in case a different slug is not found
     if (!seoData) {
-      console.warn(
-        `SEO data for slug "${slug}" not found. Falling back to homepage.`,
-      );
+      const isFileOrSystemPath =
+        slug.includes(".") || slug.startsWith(".well-known");
+
+      if (!isFileOrSystemPath) {
+        console.warn(
+          `SEO data for slug "${slug}" not found. Falling back to homepage.`,
+        );
+      }
       seoData = await SeoManager.findOne({ slug: "home" }).lean();
     }
 
